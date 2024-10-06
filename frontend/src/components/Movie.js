@@ -7,43 +7,52 @@ const Movie = () => {
   console.log(movie);
   let { id } = useParams();
 
-  console.log(id);
   useEffect(() => {
-    let moviesList = [
-      {
-        id: 1,
-        title: "Spiderman",
-        genre: "Action",
-        release_date: "2022-01-01",
-        runtime: 120,
-        mpaa_rating: "PG-13",
-        description: "spiderman movie",
-      },
-      {
-        id: 2,
-        title: "Batman",
-        genre: "Action",
-        release_date: "2022-01-01",
-        runtime: 140,
-        mpaa_rating: "PG-13",
-        description: "batman movie",
-      },
-    ];
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
 
-    const movie = moviesList.find((movie) => movie.id === parseInt(id));
-
-    setMovie(movie);
+    const requestOptions = {
+      method: "GET",
+      headers: headers,
+    };
+    fetch(`/movies/${id}`, requestOptions)
+      .then((response) => response.json())
+      .then((data) => setMovie(data))
+      .catch((error) => console.log(error));
   }, [id]);
+
+  if (movie.genres) {
+    movie.genres = Object.values(movie.genres);
+  } else {
+    movie.genres = [];
+  }
 
   return (
     <div>
       <h2>Movie: {movie.title}</h2>
       <small>
-       {movie.genre}, {movie.release_date},
-        {movie.runtime} minutes, Rated {movie.mpaa_rating}
+        {" "}
+        <em>
+         {movie.release_date},{movie.runtime} minutes, Rated{" "}
+          {movie.mpaa_rating}
+        </em>
       </small>
-      <hr />
+      <br />
 
+      {movie.genres.map((g) => (
+        <span key={g.id} className="badge bg-secondary me-2">
+          {g.genre}
+        </span>
+      ))}
+      <hr />
+      {movie.image !== "" && (
+        <div className="mb-3">
+          <img
+            src={`https://image.tmdb.org/t/p/w200${movie.image}`}
+            alt={movie.title}
+          />
+        </div>
+      )}
       <p>{movie.description}</p>
     </div>
   );
