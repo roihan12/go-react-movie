@@ -8,22 +8,55 @@ const Login = () => {
   const { setJwtToken } = useOutletContext();
   const { setAlertMessage } = useOutletContext();
   const { setAlertClassName } = useOutletContext();
+  const { toggleRefresh } = useOutletContext();
 
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log(email, password);
-    if (email === "admin@example.com") {
-      setJwtToken("abc");
-      setAlertClassName("d-none");
-      setAlertMessage("");
-      navigate("/");
-    } else {
-      setAlertClassName("alert-danger");
-      setAlertMessage("Invalid Credentials");
-    }
+    // build the request body
+    let payload = {
+      email: email,
+      password: password,
+    };
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    };
+
+    fetch("/authenticate", requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.error) {
+          setAlertClassName("alert-danger");
+          setAlertMessage(data.message);
+        } else {
+          setJwtToken(data.access_token);
+          setAlertClassName("d-none");
+          setAlertMessage("");
+          toggleRefresh(true)
+          navigate("/");
+        }
+      })
+      .catch((error) => {
+        setAlertClassName("alert-danger");
+        setAlertMessage(error);
+      });
+
+    // console.log(email, password);
+    // if (email === "admin@example.com") {
+    //   setJwtToken("abc");
+    //   setAlertClassName("d-none");
+    //   setAlertMessage("");
+    //   navigate("/");
+    // } else {
+    //   setAlertClassName("alert-danger");
+    //   setAlertMessage("Invalid Credentials");
+    // }
   };
 
   return (
